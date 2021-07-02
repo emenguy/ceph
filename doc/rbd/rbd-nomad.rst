@@ -427,5 +427,5 @@ It will reuse the same RBD image.
 .. _Placement Groups: ../../rados/operations/placement-groups
 .. _CRUSH tunables: ../../rados/operations/crush-map/#tunables
 .. _RBD image features: ../rbd-config-ref/#image-features
-.. _nomad sateful: https://learn.hashicorp.com/tutorials/nomad/stateful-workloads-csi-volumes?in=nomad/stateful-workloads
+.. _nomad sateful: https://learn.hashicorp.com/tutorials/nomad/stateful-workloads-csi-volumes?in=nomad/stateful-workloads#create-the-job-file
 .. _ceph-csi release: https://github.com/ceph/ceph-csi#ceph-csi-container-images-and-release-compatibility
