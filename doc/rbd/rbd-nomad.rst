@@ -69,21 +69,22 @@ Configure Nomad
 ---------------
 
 By default Nomad doesn't allow containers to use privileged mode.
-Edit the nomad configuration file by adding this configuration block to `/etc/nomad.d/nomad.hcl`
+Edit the nomad configuration file by adding this configuration block to `/etc/nomad.d/nomad.hcl`::
 
     plugin "docker" {
-      config {
+        config {
         allow_privileged = true
-      }
+        }
     }
 
-Nomad must have `rbd` module loaded, check if it's the case.
+
+Nomad must have `rbd` module loaded, check if it's the case.::
 
         $ lsmod |grep rbd
         rbd                    94208  2
         libceph               364544  1 rbd
 
-If it's not the case, load it.
+If it's not the case, load it.::
 
         $ modprobe rbd
 
@@ -95,6 +96,7 @@ Create ceph-csi controller and plugin nodes
 ===========================================
 
 The `ceph-csi`_ plugin requieres two components:
+
 - **Controller plugin**: Communicates with the provider's API.
 - **Node plugin**: execute tasks on the client.
 
@@ -264,11 +266,12 @@ the `fsid` for "clusterID", and the monitor addresses for "monitors"::
 
 Start plugin controller and node
 --------------------------------
+Run::
 
         nomad job run ceph-csi-plugin-controller.nomad
         nomad job run ceph-csi-plugin-nodes.nomad
 
-`ceph-csi`_ image will be downloaded, after few minutes check plugin status
+`ceph-csi`_ image will be downloaded, after few minutes check plugin status::
 
         $ nomad plugin status ceph-csi
         ID                   = ceph-csi
@@ -317,23 +320,22 @@ using the newly created nomad user id and cephx key::
           imageFeatures = "layering"
         }
 
-Once generated, create the volume:
+Once generated, create the volume::
 
         $ nomad volume create ceph-volume.hcl
 
 Use rbd image with a container
 ------------------------------
 
-As example we'll modify Hashicorp learn https://learn.hashicorp.com/tutorials/nomad/stateful-workloads-csi-volumes?in=nomad/stateful-workloads example 
-Generate a mysql.nomad file similar to the example below.
+As example we'll modify Hashicorp learn `nomad sateful`_ example 
+
+Generate a mysql.nomad file similar to the example below.::
 
         job "mysql-server" {
           datacenters = ["dc1"]
           type        = "service"
-
           group "mysql-server" {
             count = 1
-
             volume "ceph-mysql" {
               type      = "csi"
                 attachment_mode = "file-system"
@@ -341,48 +343,39 @@ Generate a mysql.nomad file similar to the example below.
               read_only = false
               source    = "ceph-mysql"
             }
-
             network {
               port "db" {
                 static = 3306
               }
             }
-
             restart {
               attempts = 10
               interval = "5m"
               delay    = "25s"
               mode     = "delay"
             }
-
             task "mysql-server" {
               driver = "docker"
-
               volume_mount {
                 volume      = "ceph-mysql"
                 destination = "/srv"
                 read_only   = false
               }
-
               env {
                 MYSQL_ROOT_PASSWORD = "password"
               }
-
               config {
                 image = "hashicorp/mysql-portworx-demo:latest"
                 args  = ["--datadir", "/srv/mysql"]
                 ports = ["db"]
               }
-
               resources {
                 cpu    = 500
                 memory = 1024
               }
-
               service {
                 name = "mysql-server"
                 port = "db"
-
                 check {
                   type     = "tcp"
                   interval = "10s"
@@ -393,11 +386,11 @@ Generate a mysql.nomad file similar to the example below.
           }
         }
 
-Start the job
+Start the job::
 
         $ nomad job run mysql.nomad
 
-Check job's status
+Check job's status::
 
         nomad job status mysql-server
         ...
@@ -416,3 +409,4 @@ It will reuse the same RBD image.
 .. _Placement Groups: ../../rados/operations/placement-groups
 .. _CRUSH tunables: ../../rados/operations/crush-map/#tunables
 .. _RBD image features: ../rbd-config-ref/#image-features
+.. _nomad sateful: https://learn.hashicorp.com/tutorials/nomad/stateful-workloads-csi-volumes?in=nomad/stateful-workloads
