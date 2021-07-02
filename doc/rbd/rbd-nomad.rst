@@ -2,22 +2,36 @@
  Block Devices and Nomad
 ==============================
 
-Like Kubernetes, Nomad can use Ceph Block Device thanks to `ceph-csi`_, which allo to dinmacially provision RBD images or import existing one.
-Every nomad version can use `ceph-csi`_, however we'll here describe the latest version available at writing time, Nomad v1.1.2 .
+Like Kubernetes, Nomad can use Ceph Block Device thanks to `ceph-csi`_, 
+which allow to dinamacially provision RBD images or import existing one.
+
+Every nomad version can use `ceph-csi`_, however we'll here describe the
+latest version available at writing time, Nomad v1.1.2 .
 
 To use Ceph Block Devices with Nomad, you must install
 and configure ``ceph-csi`` within your Nomad environment. The following
 diagram depicts the Nomad/Ceph technology stack.
 
 .. ditaa::
+            +-------------------------+-------------------------+
+            |      Container          |          ceph--csi      |
+            |                         |            node         |
+            |          ^              |                 ^       |
+            |          |              |                 |       |
+            +----------+--------------+-------------------------+
+            |          |                                |       |
+            |          v                                |       |
+            |                       Nomad               |       |
+            |                                           |       |
             +---------------------------------------------------+
-            |                      Nomad                        |
-            +---------------------------------------------------+
-            |                    ceph--csi                      |
-            +------------------------+--------------------------+
-                                     |
-                                     | configures
-                                     v
+            |                       ceph--csi                   |
+            |                       controller                  |
+            +--------+------------------------------------------+
+                     |                                  |
+                     | configures       maps            |
+                     +---------------+ +----------------+
+                                     | | 
+                                     v v
             +------------------------+ +------------------------+
             |                        | |        rbd--nbd        |
             |     Kernel Modules     | +------------------------+
@@ -28,6 +42,8 @@ diagram depicts the Nomad/Ceph technology stack.
             |          OSDs          | |        Monitors        |
             +------------------------+ +------------------------+
 
+.. note::
+    Nomad has many task drivers, but we'll only use a Docker container in this example.
 
 .. important::
    ``ceph-csi`` uses the RBD kernel modules by default which may not support all
@@ -99,6 +115,9 @@ The `ceph-csi`_ plugin requieres two components:
 
 - **Controller plugin**: Communicates with the provider's API.
 - **Node plugin**: execute tasks on the client.
+
+.. note::
+    We'll set the ceph-csi's version in those files see `ceph-csi release`_ for other versions.
 
 Configure controller plugin
 ---------------------------
@@ -185,7 +204,6 @@ the `fsid` for "clusterID", and the monitor addresses for "monitors"::
             }
           }
         }
-
 
 Configure plugin node
 ---------------------
@@ -410,3 +428,4 @@ It will reuse the same RBD image.
 .. _CRUSH tunables: ../../rados/operations/crush-map/#tunables
 .. _RBD image features: ../rbd-config-ref/#image-features
 .. _nomad sateful: https://learn.hashicorp.com/tutorials/nomad/stateful-workloads-csi-volumes?in=nomad/stateful-workloads
+.. _ceph-csi release: https://github.com/ceph/ceph-csi#ceph-csi-container-images-and-release-compatibility
