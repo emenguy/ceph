@@ -107,8 +107,6 @@ static string default_storage_extra_pool_suffix = "rgw.buckets.non-ec";
 static RGWObjCategory main_category = RGWObjCategory::Main;
 #define RGW_USAGE_OBJ_PREFIX "usage."
 
-#define dout_subsys ceph_subsys_rgw
-
 
 static bool rgw_get_obj_data_pool(const RGWZoneGroup& zonegroup, const RGWZoneParams& zone_params,
                                   const rgw_placement_rule& head_placement_rule,
@@ -6790,7 +6788,7 @@ int RGWRados::block_while_resharding(RGWRados::BucketShard *bs,
       const rgw_bucket& b = bs->bucket;
       std::string bucket_id = b.get_key();
       RGWBucketReshardLock reshard_lock(this->store, bucket_info, true);
-      ret = reshard_lock.lock();
+      ret = reshard_lock.lock(dpp);
       if (ret < 0) {
 	ldpp_dout(dpp, 20) << __func__ <<
 	  " INFO: failed to take reshard lock for bucket " <<

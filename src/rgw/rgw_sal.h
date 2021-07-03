@@ -170,7 +170,8 @@ class Store {
     virtual int cluster_stat(RGWClusterStat& stats) = 0;
     virtual std::unique_ptr<Lifecycle> get_lifecycle(void) = 0;
     virtual std::unique_ptr<Completions> get_completions(void) = 0;
-    virtual std::unique_ptr<Notification> get_notification(rgw::sal::Object* obj, struct req_state* s, rgw::notify::EventType event_type) = 0;
+    virtual std::unique_ptr<Notification> get_notification(rgw::sal::Object* obj, struct req_state* s, 
+        rgw::notify::EventType event_type, const std::string* object_name=nullptr) = 0;
     virtual std::unique_ptr<GCChain> get_gc_chain(rgw::sal::Object* obj) = 0;
     virtual std::unique_ptr<Writer> get_writer(Aio* aio, rgw::sal::Bucket* bucket,
               RGWObjectCtx& obj_ctx, std::unique_ptr<rgw::sal::Object> _head_obj,
@@ -849,7 +850,7 @@ protected:
 
     virtual int publish_reserve(const DoutPrefixProvider *dpp, RGWObjTags* obj_tags = nullptr) = 0;
     virtual int publish_commit(const DoutPrefixProvider* dpp, uint64_t size,
-			       const ceph::real_time& mtime, const std::string& etag) = 0;
+			       const ceph::real_time& mtime, const std::string& etag, const std::string& version) = 0;
 };
 
 class GCChain {

@@ -288,7 +288,7 @@ int RadosBucket::remove_bucket(const DoutPrefixProvider* dpp,
   RGWPubSub::Bucket ps_bucket(&ps, info.bucket);
   const auto ps_ret = ps_bucket.remove_notifications(dpp, y);
   if (ps_ret < 0 && ps_ret != -ENOENT) {
-    lderr(store->ctx()) << "ERROR: unable to remove notifications from bucket. ret=" << ps_ret << dendl;
+    ldpp_dout(dpp, -1) << "ERROR: unable to remove notifications from bucket. ret=" << ps_ret << dendl;
   }
 
   ret = store->ctl()->bucket->unlink_bucket(info.owner, info.bucket, y, dpp, false);
@@ -932,9 +932,10 @@ std::unique_ptr<Completions> RadosStore::get_completions(void)
 
 std::unique_ptr<Notification> RadosStore::get_notification(rgw::sal::Object* obj,
 							    struct req_state* s,
-							    rgw::notify::EventType event_type)
+							    rgw::notify::EventType event_type,
+                                                            const std::string* object_name)
 {
-  return std::unique_ptr<Notification>(new RadosNotification(s, this, obj, s, event_type));
+  return std::unique_ptr<Notification>(new RadosNotification(s, this, obj, s, event_type, object_name));
 }
 
 std::unique_ptr<GCChain> RadosStore::get_gc_chain(rgw::sal::Object* obj)
@@ -1916,9 +1917,9 @@ int RadosNotification::publish_reserve(const DoutPrefixProvider *dpp, RGWObjTags
 }
 
 int RadosNotification::publish_commit(const DoutPrefixProvider* dpp, uint64_t size,
-				     const ceph::real_time& mtime, const std::string& etag)
+				     const ceph::real_time& mtime, const std::string& etag, const std::string& version)
 {
-  return rgw::notify::publish_commit(obj, size, mtime, etag, event_type, res, dpp);
+  return rgw::notify::publish_commit(obj, size, mtime, etag, version, event_type, res, dpp);
 }
 
 void RadosGCChain::update(const DoutPrefixProvider *dpp, RGWObjManifest* manifest)
